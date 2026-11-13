@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BrainVision AI – Interactive Project Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16122e; --ink2:#2b2650; --dark:#1b1440; --vio:#5b3fb8; --vio2:#7c63d6; --lav:#efebfb; --lav2:#e2dbfa;
+  --org:#e8691c; --org2:#ff9b5c; --peach:#fdeee3; --ok:#14966f; --bad:#d6334a; --bg:#f7f5fd; --card:#fff;
+  --r:18px; --shadow:0 10px 30px -12px rgba(42,31,94,.28);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+h1,h2,h3{line-height:1.2;margin:0}
+.en-num,.mono{font-family:"Space Grotesk","IBM Plex Sans Arabic",sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+button{font:inherit;cursor:pointer}
+/* nav */
+nav{position:sticky;top:0;z-index:20;background:rgba(27,20,64,.92);backdrop-filter:blur(10px);color:#fff}
+nav .wrap{display:flex;align-items:center;gap:18px;height:62px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-family:"Space Grotesk";font-size:19px;letter-spacing:.3px}
+.logo i{width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,var(--vio2),var(--org));display:inline-block;position:relative}
+.logo i::after{content:"";position:absolute;inset:8px;border-radius:50%;border:2px solid #fff}
+nav .links{display:flex;gap:4px;margin-inline-start:auto}
+nav .links a{color:#e4ddfb;text-decoration:none;font-size:14px;padding:8px 12px;border-radius:10px}
+nav .links a:hover{background:rgba(255,255,255,.1);color:#fff}
+.lang{display:flex;background:rgba(255,255,255,.12);border-radius:12px;padding:3px}
+.lang button{border:0;background:transparent;color:#fff;padding:6px 12px;border-radius:9px;font-weight:600;font-size:13px}
+.lang button.on{background:#fff;color:var(--dark)}
+/* hero */
+.hero{background:radial-gradient(1200px 500px at 85% -10%,rgba(124,99,214,.55),transparent 60%),radial-gradient(700px 400px at -10% 110%,rgba(232,105,28,.35),transparent 60%),var(--dark);color:#fff;padding:70px 0 90px;position:relative;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+.tag{display:inline-block;font-size:12.5px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--org2);margin-bottom:14px}
+[dir=rtl] .tag{letter-spacing:0}
+.hero h1{font-size:54px;font-family:"Space Grotesk","IBM Plex Sans Arabic";font-weight:700}
+.hero p.lead{font-size:19px;color:#ddd5fb;max-width:560px;margin:16px 0 26px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:13px 22px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn.primary{background:var(--org);color:#fff;box-shadow:0 10px 24px -10px var(--org)}
+.btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.btn.vio{background:var(--vio);color:#fff}
+.btn.light{background:var(--lav);color:var(--vio)}
+.btn.danger{background:#fde8eb;color:var(--bad)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:34px;max-width:560px}
+.stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px 14px}
+.stat b{display:block;font-family:"Space Grotesk";font-size:24px}
+.stat span{font-size:12.5px;color:#cfc6f6}
+.brainart{position:relative;aspect-ratio:1;border-radius:28px;background:#000;box-shadow:0 30px 60px -20px rgba(0,0,0,.6);overflow:hidden;border:1px solid rgba(255,255,255,.12)}
+.brainart canvas{width:100%;height:100%;display:block}
+.brainart .scan{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--org2),transparent);box-shadow:0 0 18px var(--org2);animation:scan 3.2s ease-in-out infinite}
+@keyframes scan{0%{top:6%}50%{top:92%}100%{top:6%}}
+.brainart .chip{position:absolute;bottom:16px;inset-inline-start:16px;background:rgba(27,20,64,.85);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:8px 12px;font-size:13px}
+.brainart .chip b{color:var(--org2)}
+/* sections */
+section{padding:72px 0}
+.sh{max-width:720px;margin-bottom:30px}
+.sh .tag{color:var(--org)}
+.sh h2{font-size:34px;font-family:"Space Grotesk","IBM Plex Sans Arabic"}
+.sh p{color:var(--ink2);margin:10px 0 0;font-size:16.5px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);border:1px solid #ece8fa}
+/* simulator */
+.stepper{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.step{flex:1;min-width:110px;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid #e6e1f7;font-size:13px;font-weight:600;color:#6d6790;transition:.25s}
+.step i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;background:var(--lav);color:var(--vio);flex:none}
+.step.on{background:var(--vio);color:#fff;border-color:var(--vio)}
+.step.on i{background:#fff;color:var(--vio)}
+.step.done{color:var(--vio);border-color:var(--lav2)}
+.step.done i{background:var(--vio);color:#fff}
+.step.err{background:#fde8eb;border-color:#f6b8c2;color:var(--bad)}
+.step.err i{background:var(--bad);color:#fff}
+.sim{display:grid;grid-template-columns:330px 1fr;gap:18px;align-items:start}
+.panel{padding:20px}
+.panel h3{font-size:16px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.panel h3 .n{width:24px;height:24px;border-radius:8px;background:var(--org);color:#fff;display:grid;place-items:center;font-size:12.5px;font-family:"Space Grotesk"}
+.samples{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.sample{border:2px solid transparent;border-radius:14px;background:var(--lav);padding:6px;text-align:center;font-size:12.5px;font-weight:600;color:var(--ink2);transition:.15s}
+.sample canvas{width:100%;aspect-ratio:1;border-radius:10px;display:block;background:#000}
+.sample:hover{border-color:var(--vio2)}
+.sample.sel{border-color:var(--org);background:var(--peach)}
+.uploadrow{display:flex;gap:8px;margin-top:10px}
+.uploadrow label,.uploadrow button{flex:1;text-align:center;border-radius:12px;padding:10px;font-size:13px;font-weight:600;border:1.5px dashed var(--vio2);color:var(--vio);background:#fff;cursor:pointer}
+.uploadrow button{border-color:#f0a3ae;color:var(--bad)}
+.models{display:grid;gap:10px}
+.model{display:flex;gap:12px;align-items:center;text-align:start;border:2px solid #e6e1f7;background:#fff;border-radius:14px;padding:12px}
+.model b{display:block;font-size:15px}
+.model small{color:#6d6790;font-size:12.5px}
+.model .dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--vio2);flex:none;position:relative}
+.model.sel{border-color:var(--vio);background:var(--lav)}
+.model.sel .dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--vio)}
+.divider{height:1px;background:#ece8fa;margin:18px 0}
+.runrow{display:flex;gap:8px;flex-wrap:wrap}
+.runrow .btn{flex:1;justify-content:center}
+.stage{padding:20px;min-height:520px;display:flex;flex-direction:column}
+.stagehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.stagehead h3{font-size:18px}
+.session{font-size:12.5px;background:var(--lav);color:var(--vio);border-radius:10px;padding:6px 10px;font-weight:600}
+.empty{flex:1;display:grid;place-items:center;text-align:center;color:#7a73a0;border:2px dashed #e1dbf6;border-radius:16px;padding:30px}
+.empty .big{font-size:46px}
+.pre{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.pre div{text-align:center;font-size:12px;font-weight:600;color:var(--ink2);opacity:.25;transition:opacity .4s}
+.pre div.show{opacity:1}
+.pre canvas{width:100%;aspect-ratio:1;border-radius:10px;background:#000;display:block;margin-bottom:6px}
+.result{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.views{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.views figure{margin:0;text-align:center;font-size:12.5px;font-weight:600;color:var(--ink2)}
+.views canvas{width:100%;aspect-ratio:1;border-radius:12px;background:#000;display:block;margin-bottom:6px}
+.pred{background:var(--dark);color:#fff;border-radius:16px;padding:16px}
+.pred .cls{font-size:26px;font-weight:700;font-family:"Space Grotesk","IBM Plex Sans Arabic"}
+.pred .conf{color:var(--org2);font-weight:700}
+.bars{margin-top:12px;display:grid;gap:8px}
+.bar{font-size:13px}
+.bar .t{display:flex;justify-content:space-between}
+.bar .track{height:9px;background:rgba(255,255,255,.14);border-radius:9px;overflow:hidden;margin-top:3px}
+.bar .fill{height:100%;width:0;background:var(--vio2);border-radius:9px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.bar.top .fill{background:var(--org)}
+.notice{margin-top:14px;background:var(--peach);border:1px solid #f7cfb3;color:#8a3a0c;border-radius:14px;padding:10px 14px;font-size:13.5px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.cmp .c{border-radius:14px;padding:12px;background:var(--lav)}
+.cmp .c b{color:var(--vio)}
+.cmp canvas{width:100%;aspect-ratio:1;border-radius:10px;display:block;margin:8px 0}
+.err{background:#fde8eb;border:1px solid #f6b8c2;color:var(--bad);border-radius:14px;padding:16px;font-weight:600}
+.legend{display:flex;align-items:center;gap:8px;font-size:12px;color:#6d6790;margin-top:6px;justify-content:center}
+.legend span{display:inline-block;width:120px;height:8px;border-radius:6px;background:linear-gradient(90deg,#00007f,#0050ff,#00e0ff,#7dff7a,#ffe600,#ff4c00,#7f0000)}
+[dir=rtl] .legend span{transform:scaleX(-1)}
+.log{margin-top:16px;background:#120d2e;color:#cfc6f6;border-radius:14px;padding:12px 14px;font-family:"Space Grotesk",monospace;font-size:12.5px;max-height:150px;overflow:auto;direction:ltr;text-align:left}
+.log div{white-space:pre-wrap}
+.log .m{color:var(--org2);font-weight:700}
+.log .ok{color:#6ee7b7}.log .no{color:#fb7185}
+.deleted{display:grid;place-items:center;text-align:center;flex:1;gap:8px}
+.deleted .tick{width:70px;height:70px;border-radius:50%;background:#e3f7ef;color:var(--ok);display:grid;place-items:center;font-size:34px}
+/* architecture */
+.arch{padding:26px;overflow-x:auto}
+.arch svg{width:100%;min-width:760px;height:auto;display:block}
+.arch .node rect{rx:14}
+.flowtxt{font-family:"IBM Plex Sans Arabic";font-size:14px;font-weight:600}
+.pulse{animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-24}}
+/* pipeline + models */
+.pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-bottom:22px}
+.pipe div{position:relative;background:var(--vio);color:#fff;padding:18px 18px 18px 30px;font-weight:600;font-size:14px;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 50%,calc(100% - 18px) 100%,0 100%,18px 50%);min-height:84px;display:flex;align-items:center}
+.pipe div:first-child{clip-path:polygon(0 0,calc(100% - 18px) 0,100% 50%,calc(100% - 18px) 100%,0 100%);padding-inline-start:18px}
+.pipe div:last-child{background:var(--org)}
+[dir=rtl] .pipe div{clip-path:polygon(18px 0,100% 0,calc(100% - 18px) 50%,100% 100%,18px 100%,0 50%);padding:18px 30px 18px 18px}
+[dir=rtl] .pipe div:first-child{clip-path:polygon(18px 0,100% 0,100% 100%,18px 100%,0 50%)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.mcard{padding:0;overflow:hidden}
+.mcard .hd{padding:16px 18px;color:#fff;font-weight:700;font-size:18px}
+.mcard .bd{padding:16px 18px}
+.mcard ul{margin:0;padding-inline-start:18px;color:var(--ink2);font-size:14.5px}
+.mcard .big{font-family:"Space Grotesk";font-size:30px;font-weight:700}
+/* team */
+.team{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.member{padding:16px;display:flex;gap:12px;align-items:center}
+.av{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:700;font-family:"Space Grotesk";flex:none}
+.member b{display:block;font-size:14.5px}
+.member small{color:#6d6790;font-size:12.5px}
+footer{background:var(--dark);color:#cfc6f6;padding:30px 0;font-size:13.5px;text-align:center}
+.disclaimer{font-size:12.5px;color:#7a73a0;margin-top:10px}
+@media (max-width:980px){
+  .hero .wrap,.sim,.result{grid-template-columns:1fr}
+  .hero h1{font-size:40px}
+  .grid3,.team{grid-template-columns:1fr 1fr}
+  .pipe{grid-template-columns:1fr}
+  .pipe div,[dir=rtl] .pipe div,.pipe div:first-child,[dir=rtl] .pipe div:first-child{clip-path:none;border-radius:12px;margin-bottom:6px;padding:14px}
+  nav .links{display:none}
+  .pre{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:560px){.grid3,.team{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr 1fr}}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <div class="logo"><i></i>BrainVision AI</div>
+  <div class="links">
+    <a href="#simulator" data-i="nav_sim"></a><a href="#architecture" data-i="nav_arch"></a><a href="#pipeline" data-i="nav_pipe"></a><a href="#team" data-i="nav_team"></a>
+  </div>
+  <div class="lang"><button id="bEn" class="on">EN</button><button id="bAr">العربية</button></div>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div>
+    <div class="tag" data-i="hero_tag"></div>
+    <h1>BrainVision AI</h1>
+    <p class="lead" data-i="hero_lead"></p>
+    <div class="cta"><a class="btn primary" href="#simulator" data-i="hero_cta"></a><a class="btn ghost" href="#architecture" data-i="hero_cta2"></a></div>
+    <div class="stats">
+      <div class="stat"><b>7,200</b><span data-i="st1"></span></div>
+      <div class="stat"><b>4</b><span data-i="st2"></span></div>
+      <div class="stat"><b>2</b><span data-i="st3"></span></div>
+    </div>
+  </div>
+  <div class="brainart"><canvas id="heroCv" width="512" height="512"></canvas><div class="scan"></div><div class="chip"><span data-i="hero_chip"></span> <b>Grad-CAM</b></div></div>
+</div></header>
+
+<section id="simulator"><div class="wrap">
+  <div class="sh"><div class="tag" data-i="sim_tag"></div><h2 data-i="sim_h"></h2><p data-i="sim_p"></p></div>
+  <div class="stepper" id="stepper"></div>
+  <div class="sim">
+    <div class="card panel">
+      <h3><span class="n">1</span><span data-i="p_upload"></span></h3>
+      <div class="samples" id="samples"></div>
+      <div class="uploadrow">
+        <label><input type="file" id="file" accept="*/*" hidden><span data-i="p_own"></span></label>
+        <button id="badBtn" data-i="p_bad"></button>
+      </div>
+      <div class="divider"></div>
+      <h3><span class="n">2</span><span data-i="p_model"></span></h3>
+      <div class="models" id="models"></div>
+      <div class="divider"></div>
+      <div class="runrow">
+        <button class="btn vio" id="runBtn" data-i="p_run"></button>
+      </div>
+      <div class="runrow" style="margin-top:8px">
+        <button class="btn light" id="cmpBtn" disabled data-i="p_cmp"></button>
+        <button class="btn danger" id="endBtn" disabled data-i="p_end"></button>
+      </div>
+      <p class="disclaimer" data-i="disc"></p>
+    </div>
+    <div class="card stage" id="stage">
+      <div class="stagehead"><h3 id="stageTitle"></h3><span class="session mono" id="sessTag"></span></div>
+      <div id="stageBody" style="flex:1;display:flex;flex-direction:column"></div>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+</div></section>
+
+<section id="architecture" style="background:#fff"><div class="wrap">
+  <div class="sh"><div class="tag" data-i="arch_tag"></div><h2 data-i="arch_h"></h2><p data-i="arch_p"></p></div>
+  <div class="card arch" id="archBox"></div>
+</div></section>
+
+<section id="pipeline"><div class="wrap">
+  <div class="sh"><div class="tag" data-i="pipe_tag"></div><h2 data-i="pipe_h"></h2><p data-i="pipe_p"></p></div>
+  <div class="pipe" id="pipe"></div>
+  <div class="grid3">
+    <div class="card mcard"><div class="hd" style="background:var(--vio)">Custom CNN</div><div class="bd"><div class="big">≈ 0.39M</div><small data-i="params"></small><ul id="m1"></ul></div></div>
+    <div class="card mcard"><div class="hd" style="background:var(--org)">Xception</div><div class="bd"><div class="big">≈ 20.9M</div><small data-i="params"></small><ul id="m2"></ul></div></div>
+    <div class="card mcard"><div class="hd" style="background:var(--dark)" data-i="xai_h"></div><div class="bd"><div class="big">2</div><small data-i="xai_s"></small><ul id="m3"></ul></div></div>
+  </div>
+</div></section>
+
+<section id="team" style="background:#fff"><div class="wrap">
+  <div class="sh"><div class="tag" data-i="team_tag"></div><h2 data-i="team_h"></h2><p data-i="team_p"></p></div>
+  <div class="team" id="teamBox"></div>
+</div></section>
+
+<footer><div class="wrap"><div data-i="foot"></div></div></footer>
+
+<script>
+/* ---------- i18n ---------- */
+const T={
+en:{nav_sim:"Simulation",nav_arch:"Architecture",nav_pipe:"AI Pipeline",nav_team:"Team",
+hero_tag:"Graduation Project · Najran University",hero_lead:"An explainable deep learning system that classifies brain MRI images into four classes and shows, with Grad-CAM and Saliency Maps, where the model looked.",
+hero_cta:"Try the simulation",hero_cta2:"See the architecture",st1:"MRI images",st2:"classes",st3:"compared models",hero_chip:"Live explanation:",
+sim_tag:"Interactive simulation",sim_h:"Walk through a full BrainVision AI session",sim_p:"Pick an MRI sample, choose a model and run it. You will see validation, preprocessing, the prediction, the explanations, model comparison and session deletion, exactly as designed in the report.",
+p_upload:"Upload an MRI image",p_own:"Upload your own image",p_bad:"Try an invalid file",p_model:"Select a model",p_run:"Classify image",p_cmp:"Compare with other model",p_end:"End session",
+disc:"Simulation for demonstration only: results are generated in your browser to illustrate the design, not produced by a trained model. Not for diagnosis.",
+steps:["Upload","Validate","Store","Preprocess","Classify","Explain","Compare / End"],
+s_idle:"Waiting for an image",s_idle_p:"Select one of the MRI samples on the left, or upload your own image, to start a session.",
+s_ready:"Image ready",s_val:"Validating input…",s_pre:"Preprocessing",s_res:"Prediction & explanation",s_err:"Validation failed",s_cmp:"Model comparison",s_del:"Session ended",
+pre:["Original","Grayscale","Margin crop","Resize 224×224","Normalize"],
+v:["Input","Grad-CAM","Saliency Map"],pred:"Predicted class",conf:"confidence",probs:"Class probabilities",
+notice:"Usage notice: BrainVision AI is an academic prototype. Its output must not be used for medical diagnosis.",
+errT:"The file was rejected: only readable JPEG or PNG images up to 10 MB are accepted. Please upload another image.",
+delT:"The stored image and its results were deleted.",delP:"Session data is removed when the user ends the session or after 15 minutes of inactivity (NFR4).",
+newS:"Start a new session",session:"Session",agree:"Both models agree",disagree:"The models disagree",
+cls:{glioma:"Glioma",meningioma:"Meningioma",pituitary:"Pituitary",notumor:"No tumor"},yours:"Your image",
+models:[["Custom CNN","4 conv blocks · trained from scratch · ≈0.39M params"],["Xception","Pretrained on ImageNet · fine-tuned · ≈20.9M params"]],
+arch_tag:"System architecture",arch_h:"How the parts work together",arch_p:"The web interface talks to a Flask backend. Every request passes through validation, temporary storage, preprocessing, the selected model and the XAI module.",
+a:{ui:"Web Interface",uis:"HTML · CSS · JS",api:"Flask API",apis:"REST endpoints",val:"Input Validation",vals:"type · size · readable",store:"Temporary Storage",stores:"image ID · auto-delete",pre:"Preprocessing",pres:"crop · 224×224 · normalize",reg:"Model Registry",regs:"Custom CNN · Xception",xai:"XAI Module",xais:"Grad-CAM · Saliency",resp:"JSON Response",resps:"class · probs · heatmaps"},
+pipe_tag:"AI development pipeline",pipe_h:"From dataset to explained results",pipe_p:"Both models use the same data partitions, the same preprocessing and the same evaluation, so the comparison is fair.",
+pipe:["Kaggle dataset · 7,200 images","Clean & remove duplicates","Split: train / val / test","Train both models","Evaluate & explain errors"],
+params:"parameters",xai_h:"Explainable AI",xai_s:"explanation methods",
+m1:["Built for this project","Trained from scratch on MRI only","Grad-CAM map: 28 × 28"],m2:["Transfer learning from ImageNet","Two-stage fine-tuning","Grad-CAM map: 7 × 7"],m3:["Grad-CAM: main method","Saliency Maps: pixel-level support","Explanation-assisted error analysis"],
+team_tag:"The team",team_h:"Project team",team_p:"Najran University · Department of Information Systems · Supervised by Arwa Mohammed Al-Dhi Ahmed.",
+role:"Team member",foot:"BrainVision AI · Graduation Project 1 · Najran University · 2026"},
+ar:{nav_sim:"المحاكاة",nav_arch:"معمارية النظام",nav_pipe:"مسار الذكاء الاصطناعي",nav_team:"الفريق",
+hero_tag:"مشروع تخرج · جامعة نجران",hero_lead:"نظام Deep Learning قابل للتفسير، يصنّف صور MRI للدماغ إلى أربع فئات، ويوضّح باستخدام Grad-CAM وSaliency Maps المناطق التي ركّز عليها النموذج.",
+hero_cta:"جرّب المحاكاة",hero_cta2:"اعرض المعمارية",st1:"صورة MRI",st2:"فئات",st3:"نموذجان للمقارنة",hero_chip:"شرح مباشر:",
+sim_tag:"محاكاة تفاعلية",sim_h:"عِش تجربة Session كاملة في BrainVision AI",sim_p:"اختر صورة MRI، ثم اختر النموذج وشغّله. ستشاهد التحقق من الصورة، والـ Preprocessing، والـ Prediction، والشرح، والمقارنة بين النموذجين، وحذف الـ Session، كما صُمّم في التقرير تماماً.",
+p_upload:"ارفع صورة MRI",p_own:"ارفع صورتك",p_bad:"جرّب ملفاً غير صالح",p_model:"اختر النموذج",p_run:"صنّف الصورة",p_cmp:"قارن بالنموذج الآخر",p_end:"أنهِ الـ Session",
+disc:"محاكاة لأغراض العرض فقط: النتائج تُولَّد داخل المتصفح لتوضيح التصميم، وليست صادرة عن نموذج مدرَّب. لا تُستخدم للتشخيص.",
+steps:["Upload","Validate","Store","Preprocess","Classify","Explain","Compare / End"],
+s_idle:"بانتظار الصورة",s_idle_p:"اختر إحدى صور MRI من اليسار أو ارفع صورتك لبدء Session جديدة.",
+s_ready:"الصورة جاهزة",s_val:"جارٍ التحقق من الصورة…",s_pre:"Preprocessing",s_res:"الـ Prediction والشرح",s_err:"فشل التحقق",s_cmp:"المقارنة بين النموذجين",s_del:"انتهت الـ Session",
+pre:["الأصلية","Grayscale","Margin Crop","Resize 224×224","Normalize"],
+v:["الصورة","Grad-CAM","Saliency Map"],pred:"الفئة المتوقعة",conf:"Confidence",probs:"Class Probabilities",
+notice:"تنبيه الاستخدام: BrainVision AI نموذج أكاديمي تجريبي، ولا يجوز استخدام نتائجه في التشخيص الطبي.",
+errT:"تم رفض الملف: يقبل النظام صور JPEG أو PNG صالحة بحجم لا يتجاوز 10 MB فقط. يرجى رفع صورة أخرى.",
+delT:"تم حذف الصورة المحفوظة ونتائجها.",delP:"تُحذف بيانات الـ Session عند إنهائها من المستخدم أو بعد 15 دقيقة من عدم النشاط (NFR4).",
+newS:"ابدأ Session جديدة",session:"Session",agree:"النموذجان متفقان",disagree:"النموذجان مختلفان",
+cls:{glioma:"Glioma",meningioma:"Meningioma",pituitary:"Pituitary",notumor:"No Tumor"},yours:"صورتك",
+models:[["Custom CNN","4 Conv Blocks · تدريب من البداية · ≈0.39M Parameters"],["Xception","مدرَّب مسبقاً على ImageNet · Fine-tuning · ≈20.9M Parameters"]],
+arch_tag:"معمارية النظام",arch_h:"كيف تعمل أجزاء النظام معاً",arch_p:"تتواصل الـ Web Interface مع Backend مبني بـ Flask، ويمر كل طلب عبر التحقق، ثم الحفظ المؤقت، ثم الـ Preprocessing، ثم النموذج المختار، ثم وحدة XAI.",
+a:{ui:"Web Interface",uis:"HTML · CSS · JS",api:"Flask API",apis:"REST Endpoints",val:"Input Validation",vals:"النوع · الحجم · القابلية للقراءة",store:"Temporary Storage",stores:"Image ID · حذف تلقائي",pre:"Preprocessing",pres:"Crop · 224×224 · Normalize",reg:"Model Registry",regs:"Custom CNN · Xception",xai:"XAI Module",xais:"Grad-CAM · Saliency",resp:"JSON Response",resps:"الفئة · الاحتمالات · Heatmaps"},
+pipe_tag:"مسار تطوير الذكاء الاصطناعي",pipe_h:"من الـ Dataset إلى نتائج مفسَّرة",pipe_p:"يستخدم النموذجان نفس تقسيم البيانات، ونفس الـ Preprocessing، ونفس طريقة التقييم، لتكون المقارنة عادلة.",
+pipe:["Kaggle Dataset · 7,200 صورة","تنظيف البيانات وحذف المكرّر","التقسيم: Train / Val / Test","تدريب النموذجين","التقييم وشرح الأخطاء"],
+params:"Parameters",xai_h:"Explainable AI",xai_s:"طريقتان للشرح",
+m1:["مصمَّم خصيصاً للمشروع","يُدرَّب من البداية على صور MRI فقط","Grad-CAM Map: 28 × 28"],m2:["Transfer Learning من ImageNet","Fine-tuning على مرحلتين","Grad-CAM Map: 7 × 7"],m3:["Grad-CAM: الطريقة الرئيسية","Saliency Maps: شرح على مستوى الـ Pixel","Error Analysis بالاستعانة بالشرح"],
+team_tag:"الفريق",team_h:"فريق المشروع",team_p:"جامعة نجران · قسم نظم المعلومات · بإشراف الأستاذة Arwa Mohammed Al-Dhi Ahmed.",
+role:"عضو الفريق",foot:"BrainVision AI · مشروع التخرج 1 · جامعة نجران · 2026"}};
+let L="en";
+const t=k=>T[L][k];
+
+/* ---------- seeded random + synthetic MRI ---------- */
+function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s^=s>>>17;s^=s<<5;return((s>>>0)%100000)/100000}}
+const TUM={glioma:{x:.63,y:.42,r:.115,irr:.35,edema:true},meningioma:{x:.31,y:.27,r:.085,irr:.08,edema:false},pituitary:{x:.5,y:.67,r:.06,irr:.1,edema:false},notumor:null};
+function makeMRI(cls,seed,N=256){
+  const c=document.createElement("canvas");c.width=c.height=N;const g=c.getContext("2d");const im=g.createImageData(N,N);const R=rng(seed);
+  const ph=[R()*6,R()*6,R()*6,R()*6];const tu=TUM[cls];const lob=[];for(let i=0;i<9;i++)lob.push([R()*6.28,.6+R()*.5]);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const u=x/N-.5,v=y/N-.52;const e=(u*u)/(.36*.36)+(v*v)/(.43*.43);let val=0;
+    if(e<1){
+      const d=Math.sqrt(e);
+      const gyri=.5+.5*Math.sin(x*.21+Math.sin(y*.09+ph[0])*3)*Math.sin(y*.19+Math.sin(x*.07+ph[1])*3);
+      val=70+gyri*55+(1-d)*35;
+      if(Math.abs(u)<.012&&e<.8)val*=.55; // midline
+      const vent=((u-.05)*(u-.05))/(.05*.05)+((v+.02)*(v+.02))/(.1*.1);const vent2=((u+.05)*(u+.05))/(.05*.05)+((v+.02)*(v+.02))/(.1*.1);
+      if(vent<1||vent2<1)val=30+gyri*15;
+      if(d>.93)val=210-(d-.93)*900; // skull ring
+      if(tu){const dx=x/N-tu.x,dy=y/N-tu.y;const a=Math.atan2(dy,dx);let rr=tu.r;for(const[p,f]of lob)rr+=tu.r*tu.irr*.18*Math.sin(a*3*f+p);
+        const dd=Math.sqrt(dx*dx+dy*dy);
+        if(tu.edema&&dd<rr*1.7&&dd>=rr)val=val*.75+20;
+        if(dd<rr){val=185+40*(1-dd/rr)+R()*18;if(cls==="glioma"&&dd<rr*.35)val=90+R()*30;}}
+    }
+    val+=R()*14-7;val=Math.max(0,Math.min(255,val));const i=(y*N+x)*4;im.data[i]=im.data[i+1]=im.data[i+2]=val;im.data[i+3]=255;
+  }
+  g.putImageData(im,0,0);return c;
+}
+function jet(v){const r=Math.min(1,Math.max(0,1.5-Math.abs(4*v-3))),g=Math.min(1,Math.max(0,1.5-Math.abs(4*v-2))),b=Math.min(1,Math.max(0,1.5-Math.abs(4*v-1)));return[r*255,g*255,b*255]}
+function focusOf(img){return img.cls&&TUM[img.cls]?TUM[img.cls]:img.cls==="notumor"?{x:.5,y:.5,r:.25,diffuse:true}:img.focus}
+function gradcam(img,model,N=256){
+  const res=model===0?28:7;const f=focusOf(img);const R=rng(img.seed+model*77);
+  const sm=document.createElement("canvas");sm.width=sm.height=res;const sg=sm.getContext("2d");const d=sg.createImageData(res,res);
+  for(let j=0;j<res;j++)for(let i=0;i<res;i++){const x=(i+.5)/res,y=(j+.5)/res;const s=(f.diffuse?.24:f.r*(model===0?1.6:1.9));
+    let v=Math.exp(-((x-f.x)**2+(y-f.y)**2)/(2*s*s));if(f.diffuse)v=v*.55+R()*.12;if(model===0)v+=R()*.12*Math.exp(-((x-.5)**2+(y-.5)**2)/.08);v=Math.min(1,v);
+    const k=(j*res+i)*4;const[r,g,b]=jet(v);d.data[k]=r;d.data[k+1]=g;d.data[k+2]=b;d.data[k+3]=255}
+  sg.putImageData(d,0,0);
+  const c=document.createElement("canvas");c.width=c.height=N;const g=c.getContext("2d");g.drawImage(img.canvas,0,0,N,N);g.globalAlpha=.5;g.imageSmoothingEnabled=true;g.imageSmoothingQuality="high";g.drawImage(sm,0,0,N,N);g.globalAlpha=1;return c;
+}
+function saliency(img,model,N=256){
+  const src=document.createElement("canvas");src.width=src.height=N;const sg=src.getContext("2d");sg.drawImage(img.canvas,0,0,N,N);const p=sg.getImageData(0,0,N,N).data;
+  const c=document.createElement("canvas");c.width=c.height=N;const g=c.getContext("2d");const o=g.createImageData(N,N);const f=focusOf(img);const R=rng(img.seed+11+model);
+  for(let y=1;y<N-1;y++)for(let x=1;x<N-1;x++){const i=(y*N+x)*4;const gx=p[i+4]-p[i-4],gy=p[i+N*4]-p[i-N*4];let m=Math.sqrt(gx*gx+gy*gy)/180;
+    const w=Math.exp(-(((x/N-f.x)**2+(y/N-f.y)**2))/(2*((f.diffuse?.3:f.r*2.2)**2)));m=Math.min(1,m*(.15+w*1.4)+R()*.06*w);
+    o.data[i]=255*Math.min(1,m*1.6);o.data[i+1]=255*Math.min(1,m*m*1.2);o.data[i+2]=255*Math.min(1,m*.3+m*m*.8);o.data[i+3]=255}
+  g.putImageData(o,0,0);return c;
+}
+function probs(img,model){
+  const K=["glioma","meningioma","pituitary","notumor"];const R=rng(img.seed*3+model+1);let truth=img.cls,base;
+  if(!truth){const h=img.seed%4;truth=K[h];base=.52+R()*.12}else base=model===0?.84+R()*.06:.91+R()*.05;
+  const p={};let rest=1-base;const others=K.filter(k=>k!==truth);const w=others.map(k=>(truth==="glioma"&&k==="meningioma")||(truth==="meningioma"&&k==="glioma")?3:1).map(v=>v*(.6+R()*.8));const sw=w.reduce((a,b)=>a+b);
+  others.forEach((k,i)=>p[k]=rest*w[i]/sw);p[truth]=base;return K.map(k=>[k,p[k]]).sort((a,b)=>b[1]-a[1]);
+}
+
+/* ---------- state ---------- */
+const S={img:null,model:0,step:-1,err:false,result:null,cmp:false,sid:null,iid:null};
+const samples=[["glioma",101],["meningioma",202],["pituitary",303],["notumor",404]].map(([cls,seed])=>({cls,seed,canvas:makeMRI(cls,seed)}));
+const $=id=>document.getElementById(id);
+function hex(n){let s="";const R=rng(Date.now()%99991+n);for(let i=0;i<n;i++)s+="0123456789abcdef"[Math.floor(R()*16)];return s}
+function log(m,path,code,extra){const d=document.createElement("div");d.innerHTML=`<span class="m">${m}</span> ${path} → <span class="${code<300?"ok":"no"}">${code}</span>${extra?"  "+extra:""}`;$("log").prepend(d)}
+function renderStepper(){const st=t("steps");$("stepper").innerHTML=st.map((s,i)=>`<div class="step ${S.err&&i===1?"err":i<S.step?"done":i===S.step?"on":""}"><i class="mono">${S.err&&i===1?"!":i<S.step?"✓":i+1}</i>${s}</div>`).join("")}
+function renderSamples(){$("samples").innerHTML="";samples.forEach((s,i)=>{const b=document.createElement("button");b.className="sample"+(S.img===s?" sel":"");const cv=document.createElement("canvas");cv.width=cv.height=128;cv.getContext("2d").drawImage(s.canvas,0,0,128,128);b.appendChild(cv);b.append(t("cls")[s.cls]);b.onclick=()=>pick(s);$("samples").appendChild(b)})}
+function renderModels(){$("models").innerHTML=t("models").map((m,i)=>`<button class="model ${S.model===i?"sel":""}" data-m="${i}"><span class="dot"></span><span><b>${m[0]}</b><small>${m[1]}</small></span></button>`).join("");document.querySelectorAll(".model").forEach(b=>b.onclick=()=>{S.model=+b.dataset.m;renderModels();if(S.step>=5){S.cmp=false;classify()}})}
+function cvEl(c,w=256){const e=document.createElement("canvas");e.width=e.height=w;e.getContext("2d").drawImage(c,0,0,w,w);return e}
+function setStage(title,html){$("stageTitle").textContent=title;$("stageBody").innerHTML="";if(typeof html==="string")$("stageBody").innerHTML=html;else $("stageBody").appendChild(html);
+  $("sessTag").textContent=S.sid?`${t("session")} ${S.sid}`:"";}
+function idle(){S.step=-1;S.err=false;S.img=null;S.result=null;S.sid=null;renderStepper();renderSamples();setStage(t("s_idle"),`<div class="empty"><div><div class="big">🧠</div><p>${t("s_idle_p")}</p></div></div>`);$("runBtn").disabled=true;$("cmpBtn").disabled=true;$("endBtn").disabled=true}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function pick(img,bad){
+  S.err=false;S.cmp=false;S.img=bad?null:img;renderSamples();if(!S.sid)S.sid=hex(6);
+  S.step=0;renderStepper();setStage(t("s_val"),`<div class="empty"><div><div class="big">⏳</div><p>${t("s_val")}</p></div></div>`);
+  await wait(500);S.step=1;renderStepper();await wait(600);
+  if(bad){S.err=true;renderStepper();log("POST","/api/upload",415,bad);setStage(t("s_err"),`<div class="err">✕ ${t("errT")}</div><div class="empty" style="margin-top:14px"><div><div class="big">📄</div><p class="mono">${bad}</p></div></div>`);$("runBtn").disabled=true;$("cmpBtn").disabled=true;$("endBtn").disabled=false;return}
+  S.iid=hex(10);S.step=2;renderStepper();log("POST","/api/upload",201,`{"image_id":"${S.iid}"}`);
+  const box=document.createElement("div");box.className="empty";box.style.display="block";const c=cvEl(img.canvas,256);c.style.cssText="width:min(300px,100%);border-radius:16px;margin:0 auto;display:block";box.appendChild(c);
+  const p=document.createElement("p");p.innerHTML=`<b>${t("s_ready")}</b> · Image ID <span class="mono">${S.iid}</span>`;box.appendChild(p);setStage(t("s_ready"),box);
+  $("runBtn").disabled=false;$("endBtn").disabled=false;$("cmpBtn").disabled=true;
+}
+function stepsCanvases(img){const N=128,o=[];const base=cvEl(img.canvas,N);o.push(base);
+  const g1=cvEl(img.canvas,N);const x=g1.getContext("2d");const d=x.getImageData(0,0,N,N);for(let i=0;i<d.data.length;i+=4){const v=.3*d.data[i]+.59*d.data[i+1]+.11*d.data[i+2];d.data[i]=d.data[i+1]=d.data[i+2]=v}x.putImageData(d,0,0);o.push(g1);
+  const c2=document.createElement("canvas");c2.width=c2.height=N;const y=c2.getContext("2d");y.drawImage(g1,N*.12,N*.06,N*.76,N*.88,0,0,N,N);o.push(c2);
+  const c3=document.createElement("canvas");c3.width=c3.height=N;const z=c3.getContext("2d");z.imageSmoothingEnabled=false;const tiny=document.createElement("canvas");tiny.width=tiny.height=56;tiny.getContext("2d").drawImage(c2,0,0,56,56);z.drawImage(tiny,0,0,N,N);o.push(c3);
+  const c4=cvEl(c2,N);const w=c4.getContext("2d");const e=w.getImageData(0,0,N,N);for(let i=0;i<e.data.length;i+=4){const v=e.data[i]/255;const[r,g,b]=[v*120+40,v*90+30,v*200+40];e.data[i]=r;e.data[i+1]=g;e.data[i+2]=b}w.putImageData(e,0,0);o.push(c4);return o}
+async function classify(){
+  if(!S.img)return;$("runBtn").disabled=true;$("cmpBtn").disabled=true;S.step=3;renderStepper();
+  const wrap=document.createElement("div");const pre=document.createElement("div");pre.className="pre";const cs=stepsCanvases(S.img);
+  cs.forEach((c,i)=>{const d=document.createElement("div");d.appendChild(c);d.append(t("pre")[i]);pre.appendChild(d)});wrap.appendChild(pre);setStage(t("s_pre")+" · "+t("models")[S.model][0],wrap);
+  for(let i=0;i<5;i++){await wait(320);pre.children[i].classList.add("show")}
+  log("POST","/api/classify",200,`{"image_id":"${S.iid}","model":"${S.model?"xception":"custom_cnn"}"}`);
+  S.step=4;renderStepper();await wait(450);S.step=5;renderStepper();
+  const pr=probs(S.img,S.model);S.result=pr;
+  const res=document.createElement("div");res.className="result";
+  const views=document.createElement("div");views.className="views";[S.img.canvas,gradcam(S.img,S.model),saliency(S.img,S.model)].forEach((c,i)=>{const f=document.createElement("figure");f.appendChild(cvEl(c,256));f.append(t("v")[i]);views.appendChild(f)});
+  const left=document.createElement("div");left.appendChild(views);const lg=document.createElement("div");lg.className="legend";lg.innerHTML=`<em>low</em><span></span><em>high</em>`;left.appendChild(lg);
+  const right=document.createElement("div");right.className="pred";
+  right.innerHTML=`<small>${t("pred")} · ${t("models")[S.model][0]}</small><div class="cls">${t("cls")[pr[0][0]]}</div><div><span class="conf mono">${(pr[0][1]*100).toFixed(1)}%</span> ${t("conf")}</div><div style="margin-top:10px;font-size:13px;color:#cfc6f6">${t("probs")}</div><div class="bars">${pr.map((p,i)=>`<div class="bar ${i===0?"top":""}"><div class="t"><span>${t("cls")[p[0]]}</span><span class="mono">${(p[1]*100).toFixed(1)}%</span></div><div class="track"><div class="fill" data-w="${p[1]*100}"></div></div></div>`).join("")}</div>`;
+  res.appendChild(left);res.appendChild(right);const out=document.createElement("div");out.appendChild(res);const n=document.createElement("div");n.className="notice";n.textContent="⚠ "+t("notice");out.appendChild(n);
+  setStage(t("s_res"),out);requestAnimationFrame(()=>document.querySelectorAll(".fill").forEach(f=>f.style.width=f.dataset.w+"%"));
+  $("cmpBtn").disabled=false;$("runBtn").disabled=false;$("endBtn").disabled=false;
+}
+async function compare(){
+  if(!S.img)return;S.step=6;renderStepper();log("POST","/api/classify",200,`{"image_id":"${S.iid}","model":"${S.model?"custom_cnn":"xception"}"}`);
+  const box=document.createElement("div");const g=document.createElement("div");g.className="cmp";const tops=[];
+  [0,1].forEach(m=>{const pr=probs(S.img,m);tops.push(pr[0][0]);const c=document.createElement("div");c.className="c";c.innerHTML=`<b>${t("models")[m][0]}</b><div style="font-size:13px">${t("cls")[pr[0][0]]} · <span class="mono">${(pr[0][1]*100).toFixed(1)}%</span></div>`;
+    const v=document.createElement("div");v.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:8px";[gradcam(S.img,m),saliency(S.img,m)].forEach((cv,i)=>{const f=document.createElement("figure");f.style.cssText="margin:0;text-align:center;font-size:12px";f.appendChild(cvEl(cv,200));f.append(t("v")[i+1]);v.appendChild(f)});c.appendChild(v);g.appendChild(c)});
+  box.appendChild(g);const n=document.createElement("div");n.className="notice";n.style.background=tops[0]===tops[1]?"#e3f7ef":"#fde8eb";n.style.borderColor=tops[0]===tops[1]?"#a7e3cc":"#f6b8c2";n.style.color=tops[0]===tops[1]?"#0b6b4f":"#a3122b";n.textContent=(tops[0]===tops[1]?"✓ ":"! ")+(tops[0]===tops[1]?t("agree"):t("disagree"))+" · Grad-CAM 28×28 vs 7×7";box.appendChild(n);
+  setStage(t("s_cmp"),box);
+}
+function endSession(){
+  if(S.iid)log("DELETE","/api/session/"+S.iid,204);S.step=7;renderStepper();
+  setStage(t("s_del"),`<div class="deleted"><div><div class="tick" style="margin:0 auto 10px">✓</div><h3>${t("delT")}</h3><p style="color:#6d6790;max-width:460px">${t("delP")}</p><button class="btn vio" id="newBtn">${t("newS")}</button></div></div>`);
+  $("newBtn").onclick=idle;S.img=null;S.iid=null;S.sid=null;$("sessTag").textContent="";renderSamples();$("runBtn").disabled=true;$("cmpBtn").disabled=true;$("endBtn").disabled=true;
+}
+$("runBtn").onclick=classify;$("cmpBtn").onclick=compare;$("endBtn").onclick=endSession;
+$("badBtn").onclick=()=>pick(null,"report_scan.pdf (2.4 MB)");
+$("file").onchange=e=>{const f=e.target.files[0];if(!f)return;e.target.value="";
+  if(!/^image\/(jpeg|png)$/.test(f.type)||f.size>10*1024*1024){pick(null,`${f.name} (${(f.size/1048576).toFixed(1)} MB)`);return}
+  const url=URL.createObjectURL(f);const im=new Image();im.onload=()=>{const c=document.createElement("canvas");c.width=c.height=256;const g=c.getContext("2d");g.fillStyle="#000";g.fillRect(0,0,256,256);const s=Math.min(256/im.width,256/im.height);g.drawImage(im,(256-im.width*s)/2,(256-im.height*s)/2,im.width*s,im.height*s);
+    const d=g.getImageData(0,0,256,256).data;let mx=0,bx=.5,by=.5,sum=0;for(let y=0;y<256;y+=4)for(let x=0;x<256;x+=4){const i=(y*256+x)*4;const v=d[i]+d[i+1]+d[i+2];sum+=v;if(v>mx&&Math.hypot(x-128,y-128)<100){mx=v;bx=x/256;by=y/256}}
+    pick({cls:null,seed:Math.floor(sum)%100000+7,canvas:c,focus:{x:bx,y:by,r:.1},name:t("yours")});URL.revokeObjectURL(url)};
+  im.onerror=()=>pick(null,f.name);im.src=url};
+
+/* ---------- architecture svg ---------- */
+function renderArch(){
+  const a=t("a");const rtl=L==="ar";const W=1100;const X=x=>rtl?W-x:x;
+  const nodes=[["ui",40,40,"#5b3fb8"],["api",320,40,"#2a1f5e"],["val",600,40,"#5b3fb8"],["store",860,40,"#7c63d6"],["pre",860,200,"#5b3fb8"],["reg",600,200,"#e8691c"],["xai",320,200,"#e8691c"],["resp",40,200,"#2a1f5e"]];
+  const w=200,h=86;const pos={};nodes.forEach(([k,x,y])=>pos[k]=[rtl?W-x-w:x,y]);
+  const edges=[["ui","api"],["api","val"],["val","store"],["store","pre"],["pre","reg"],["reg","xai"],["xai","resp"],["resp","ui"]];
+  let s=`<svg viewBox="0 0 ${W} 330" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#e8691c"/></marker></defs>`;
+  edges.forEach(([p,q])=>{const[x1,y1]=pos[p],[x2,y2]=pos[q];let d;
+    if(y1===y2){const fwd=x2>x1;d=`M${fwd?x1+w:x1} ${y1+h/2} L${fwd?x2-4:x2+w+4} ${y2+h/2}`}else{const cx=x1+w/2;d=y2>y1?`M${cx} ${y1+h} L${cx} ${y2-4}`:`M${cx} ${y1} L${cx} ${y2+h+4}`}
+    s+=`<path d="${d}" stroke="#e8691c" stroke-width="2.5" fill="none" stroke-dasharray="8 4" class="pulse" marker-end="url(#ar)"/>`});
+  nodes.forEach(([k,,,col])=>{const[x,y]=pos[k];s+=`<g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="16" fill="${col}"/><text x="${x+w/2}" y="${y+38}" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="Space Grotesk, IBM Plex Sans Arabic">${a[k]}</text><text x="${x+w/2}" y="${y+62}" text-anchor="middle" fill="#e4ddfb" font-size="13" font-family="IBM Plex Sans Arabic">${a[k+"s"]}</text></g>`});
+  s+=`<text x="${W/2}" y="318" text-anchor="middle" fill="#6d6790" font-size="13" font-family="IBM Plex Sans Arabic">POST /api/upload  ·  POST /api/classify  ·  DELETE /api/session/{image_id}</text></svg>`;
+  $("archBox").innerHTML=s;
+}
+const team=["Aryam Ali Al-Wadaei","Shahad Qasem Ghazwani","Nada Zafer Al-Awad","Raghad Saleh Al-Swedah","Aryam Saud Al-Qahtani","Ajwan Fayz Al-Rashah","Wessam Adel Al-Makran"];
+function renderStatic(){
+  document.querySelectorAll("[data-i]").forEach(e=>{const v=t(e.dataset.i);if(typeof v==="string")e.textContent=v});
+  $("pipe").innerHTML=t("pipe").map(p=>`<div>${p}</div>`).join("");
+  ["m1","m2","m3"].forEach(k=>$(k).innerHTML=t(k).map(x=>`<li>${x}</li>`).join(""));
+  const cols=["#5b3fb8","#e8691c","#7c63d6","#2a1f5e"];
+  $("teamBox").innerHTML=team.map((n,i)=>`<div class="card member"><div class="av" style="background:${cols[i%4]}">${n.split(" ").map(w=>w[0]).slice(0,2).join("")}</div><div><b>${n}</b><small>${t("role")}</small></div></div>`).join("")+`<div class="card member" style="background:var(--dark);color:#fff"><div class="av" style="background:var(--org)">AA</div><div><b>Arwa Mohammed Al-Dhi Ahmed</b><small style="color:#cfc6f6">${L==="ar"?"المشرفة":"Supervisor"}</small></div></div>`;
+  renderArch();
+}
+function setLang(l){L=l;document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";$("bEn").classList.toggle("on",l==="en");$("bAr").classList.toggle("on",l==="ar");try{localStorage.setItem("bv_lang",l)}catch(e){}
+  renderStatic();renderStepper();renderSamples();renderModels();
+  if(S.step<0)idle();else if(S.step===7)endSession();else if(S.result&&S.step===5)classify();else if(S.step===6)compare();else if(S.img)pick(S.img);}
+$("bEn").onclick=()=>setLang("en");$("bAr").onclick=()=>setLang("ar");
+
+/* hero canvas: animated grad-cam over a glioma sample */
+(function hero(){const c=$("heroCv"),g=c.getContext("2d");const base=makeMRI("glioma",777,512);const hm=gradcam({cls:"glioma",seed:777,canvas:base},1,512);let a=0;
+  (function loop(){a+=.02;g.drawImage(base,0,0);g.globalAlpha=.25+.3*(.5+.5*Math.sin(a));g.drawImage(hm,0,0);g.globalAlpha=1;requestAnimationFrame(loop)})()})();
+
+let init="en";try{init=localStorage.getItem("bv_lang")||"en"}catch(e){}
+setLang(init);idle();log("GET","/",200,"BrainVision AI ready");
+</script>
+</body>
+</html>
